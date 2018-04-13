@@ -7,5 +7,5 @@ tags: jvm
 
 # JVM
 
-&ensp JVM使用的内存笼统上划分总共分为：Heap Memory和Native Memory
+  JVM使用的内存笼统上划分总共分为：Heap Memory和Native Memory
 
