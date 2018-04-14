@@ -16,7 +16,7 @@ tags: jvm
 ## JVM内存
 * 新生代：Eden，以及s0，s1
 * 老年代：Tenured
-* 永久代：<font color=Chartreuse>PermGen</font>
+* 永久代：`PermGen`
 &emsp;&emsp;内存回收模型这里不再描述 有兴趣的可以看下CMS和G1GC对比，来了解内存回收的过程
   
  ![image01](https://igithu.github.io/summary/images/jvm-ess-old.jpg)
@@ -61,7 +61,7 @@ tags: jvm
 * VM的参数：PermSize 和 MaxPermSize 会被忽略并给出警告（如果在启用时设置了这两个参数）。
 
 ### Metaspace 内存分配模型
-* 大部分类元数据并不在虚拟机，而是在本地内存分配。（这里的本地内存应该就是NativeMemory，供JVM进程使用）
+* 大部分类元数据并不在虚拟机，而是在本地内存分配。（`这里的本地内存应该就是NativeMemory，供JVM进程使用`）
 * 用于描述类元数据的“klasses“已经被移除
 * 分元数据分配了多个虚拟内存空间
 * 给每个类加载器分配一个内存块的列表。块的大小取决于类加载器的类型; sun/反射/代理对应的类加载器的块会小一些
@@ -71,7 +71,7 @@ tags: jvm
 * Metaspace可以动态增长
 
 ### Metaspace 容量
-&emsp;&emsp;新参数（MaxMetaspaceSize）用于限制本地内存分配给类元数据的大小。如果没有指定这个参数，元空间会在运行时根据需要动态调整。
+&emsp;&emsp;新参数（`MaxMetaspaceSize`）用于限制本地内存分配给类元数据的大小。如果没有指定这个参数，元空间会在运行时根据需要动态调整。
 
 ### Metaspace垃圾回收
 * 对于僵死的类及类加载器的垃圾回收将在元数据使用达到“MaxMetaspaceSize”参数的设定值时进行。
@@ -82,7 +82,7 @@ tags: jvm
 * 每个加载器有专门的存储空间
 * 只进行线性分配
 * 不会单独回收某个类
-* 省掉了GC扫描及压缩的时间
+* `省掉了GC扫描及压缩的时间`
 * 元空间里的对象的位置是固定的
 * 如果GC发现某个类加载器不再存活了，会把相关的空间整个回收掉
 
