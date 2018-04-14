@@ -31,7 +31,7 @@ tags: jvm
       
 # PMAP
 &emsp;&emsp;pmap命令用于报告`进程的内存映射关系`，是Linux调试及运维一个很好的工具。pmap效果
-![image02](https://igithu.github.io/summary/images/pmap.png){:height="50%" width="50%"}
+![image02](https://igithu.github.io/summary/images/pmap.png)
 
 
 ## 选项
