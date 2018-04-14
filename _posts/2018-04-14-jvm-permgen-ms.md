@@ -1,3 +1,12 @@
+---
+layout: post
+title: "JDK8-9中的变化: PermGen VS MetaSpace总结"
+date: 2018-04-14
+tags: jvm
+---
+
+
+
 # 背景
 这里简单总结下 Java8内存结构区别之一：MetaSpace
 
