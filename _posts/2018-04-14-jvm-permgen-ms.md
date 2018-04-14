@@ -17,7 +17,12 @@ tags: jvm
 * 新生代：Eden，以及s0，s1
 * 老年代：Tenured
 * 永久代：PermGen
-内存回收模型这里不再描述 有兴趣的可以看下CMS和G1GC对比，来了解内存回收的过程
+&emsp;&emsp;内存回收模型这里不再描述 有兴趣的可以看下CMS和G1GC对比，来了解内存回收的过程
+  
+ ![image01](https://igithu.github.io/summary/images/jvm-ess-old.jpg)
+    
+      
+      
 
 ## PermGen
 ## 概念
@@ -26,16 +31,14 @@ tags: jvm
 * GC(Garbage Collection)不会在主程序运行期对PermGen space进行清理，所以如果APP会LOAD很多CLASS 的话,就很可能出现PermGen space错误。PermGen中对象可回收的条件是，ClassLoader可以被回收 其下的所有加载过的没有对应实例的类信息（保存在PermGen）可被回收
 
 ## 伴随的问题
-MaxPermSize设置过小的时候会出现“java.lang.OutOfMemoryError: PermGen space”，很多时候是因为类加载相关的内存泄露，新Class加载器创建导致，这里的内存泄漏，是指java类和类加载器在被取消部署后不能被垃圾回收。举例：以一个部署到应用程序服务器的Java web程序来说，当该应用程序被卸载的时候,你的EAR/WAR包中的所有类都将变得无用。只要应用程序服务器还活着,JVM将继续运行,但是一大堆的类定义将不再使用,理应将它们从永久代(PermGen)中移除。如果不移除的话,我们在永久代(PermGen)区域就会有内存泄漏。这里jmap dump出内存会排查出相关的问题，在JDK7 也开业使用jmap -permstat <pid> 排查
-
-
-
+&emsp;&emsp;MaxPermSize设置过小的时候会出现“java.lang.OutOfMemoryError: PermGen space”，很多时候是因为类加载相关的内存泄露，新Class加载器创建导致.
+&emsp;&emsp;这里的内存泄漏，是指java类和类加载器在被取消部署后不能被垃圾回收。举例：以一个部署到应用程序服务器的Java web程序来说，当该应用程序被卸载的时候,你的EAR/WAR包中的所有类都将变得无用。只要应用程序服务器还活着,JVM将继续运行,但是一大堆的类定义将不再使用,理应将它们从永久代(PermGen)中移除。如果不移除的话,我们在永久代(PermGen)区域就会有内存泄漏。这里jmap dump出内存会排查出相关的问题，在JDK7 也开业使用jmap -permstat <pid> 排查
 
 
 
 # Java8 MetaSpace
-概念
-Perm这一整块内存来存klass等信息，必不可少地会配置-XX:PermSize以及-XX:MaxPermSize来控制这块内存的大小，JVM在启动的时候会根据这些配置来分配一块连续的内存块，但是随着动态类加载的情况越来越多，这块内存变得不太可控，到底设置多大合适是每个开发者要考虑的问题，如果设置太小了，系统运行过程中就容易出现内存溢出，设置大了又总感觉浪费，尽管不会实质分配这么大的物理内存。基于这么一个可能的原因，于是metaspace出现了，希望内存的管理不再受到限制，也不要怎么关注元数据这块的OOM问题，但是不意味着对应的OOM问题已经完全解决掉了
+## 概念
+&emsp;&emsp;Perm这一整块内存来存klass等信息，必不可少地会配置-XX:PermSize以及-XX:MaxPermSize来控制这块内存的大小，JVM在启动的时候会根据这些配置来分配一块连续的内存块，但是随着动态类加载的情况越来越多，这块内存变得不太可控，到底设置多大合适是每个开发者要考虑的问题，如果设置太小了，系统运行过程中就容易出现内存溢出，设置大了又总感觉浪费，尽管不会实质分配这么大的物理内存。基于这么一个可能的原因，于是metaspace出现了，希望内存的管理不再受到限制，也不要怎么关注元数据这块的OOM问题，但是不意味着对应的OOM问题已经完全解决掉了
 
 ## Metaspace组成说明
 ### 组成
@@ -63,7 +66,7 @@ Perm这一整块内存来存klass等信息，必不可少地会配置-XX:PermSiz
 * Metaspace可以动态增长
 
 ### Metaspace 容量
-新参数（MaxMetaspaceSize）用于限制本地内存分配给类元数据的大小。如果没有指定这个参数，元空间会在运行时根据需要动态调整。
+&emsp;&emsp;新参数（MaxMetaspaceSize）用于限制本地内存分配给类元数据的大小。如果没有指定这个参数，元空间会在运行时根据需要动态调整。
 
 ### Metaspace垃圾回收
 * 对于僵死的类及类加载器的垃圾回收将在元数据使用达到“MaxMetaspaceSize”参数的设定值时进行。
