@@ -16,7 +16,7 @@ tags: jvm
 ## JVM内存
 * 新生代：Eden，以及s0，s1
 * 老年代：Tenured
-* 永久代：PermGen
+* 永久代：<font color=Chartreuse>PermGen</font>
 &emsp;&emsp;内存回收模型这里不再描述 有兴趣的可以看下CMS和G1GC对比，来了解内存回收的过程
   
  ![image01](https://igithu.github.io/summary/images/jvm-ess-old.jpg)
@@ -29,19 +29,19 @@ tags: jvm
 ## 概念
 * PermGen Space的全称是 `Permanent Generation space`, 是指内存的永久保存区.
 * 这一部分用于存放Class和Meta的信息，Class在被 Load的时候被放入PermGen Space区域，Class和存放Instance的Heap区域不同， GC不会在主程序运行期对PermGen Space进行清理
-* GC(Garbage Collection)不会在主程序运行期对PermGen space进行清理，所以如果APP会LOAD很多CLASS 的话,就很可能出现PermGen space错误。PermGen中对象可回收的条件是，ClassLoader可以被回收 其下的所有加载过的没有对应实例的类信息（保存在PermGen）可被回收
+* `GC(Garbage Collection)`不会在主程序运行期对PermGen space进行清理，所以如果APP会LOAD很多CLASS 的话,就很可能出现PermGen space错误。PermGen中对象可回收的条件是，ClassLoader可以被回收 其下的所有加载过的没有对应实例的类信息（保存在PermGen）可被回收
 
 ## 伴随的问题
 
 &emsp;&emsp;MaxPermSize设置过小的时候会出现“java.lang.OutOfMemoryError: PermGen space”，很多时候是因为类加载相关的内存泄露，新Class加载器创建导致.
-&emsp;&emsp;这里的内存泄漏，是指java类和类加载器在被取消部署后不能被垃圾回收。举例：以一个部署到应用程序服务器的Java web程序来说，当该应用程序被卸载的时候,你的EAR/WAR包中的所有类都将变得无用。只要应用程序服务器还活着,JVM将继续运行,但是一大堆的类定义将不再使用,理应将它们从永久代(PermGen)中移除。如果不移除的话,我们在永久代(PermGen)区域就会有内存泄漏。这里jmap dump出内存会排查出相关的问题，在JDK7 也开业使用jmap -permstat <pid> 排查
+&emsp;&emsp;这里的内存泄漏，是指java类和类加载器在被取消部署后不能被垃圾回收。举例：以一个部署到应用程序服务器的Java web程序来说，当该应用程序被卸载的时候,你的EAR/WAR包中的所有类都将变得无用。只要应用程序服务器还活着, JVM将继续运行, `但是一大堆的类定义将不再使用`, 理应将它们从永久代(PermGen)中移除。如果不移除的话,我们在永久代(PermGen)区域就会有内存泄漏。这里jmap dump出内存会排查出相关的问题，在JDK7 也开业使用jmap -permstat <pid> 排查
 
 
 
 # Java8 MetaSpace
 
 ## 概念
-&emsp;&emsp;Perm这一整块内存来存klass等信息，必不可少地会配置-XX:PermSize以及-XX:MaxPermSize来控制这块内存的大小，JVM在启动的时候会根据这些配置来分配一块连续的内存块，但是随着动态类加载的情况越来越多，这块内存变得不太可控，到底设置多大合适是每个开发者要考虑的问题，如果设置太小了，系统运行过程中就容易出现内存溢出，设置大了又总感觉浪费，尽管不会实质分配这么大的物理内存。基于这么一个可能的原因，于是metaspace出现了，希望内存的管理不再受到限制，也不要怎么关注元数据这块的OOM问题，但是不意味着对应的OOM问题已经完全解决掉了
+&emsp;&emsp;Perm这一整块内存来存klass等信息，必不可少地会配置`-XX:PermSize`以及`-XX:MaxPermSize`来控制这块内存的大小，JVM在启动的时候会根据这些配置来分配一块连续的内存块，但是随着动态类加载的情况越来越多，这块内存变得不太可控，到底设置多大合适是每个开发者要考虑的问题，如果设置太小了，系统运行过程中就容易出现内存溢出，设置大了又总感觉浪费，尽管不会实质分配这么大的物理内存。基于这么一个可能的原因，于是metaspace出现了，希望内存的管理不再受到限制，也不要怎么关注元数据这块的OOM问题，但是不意味着对应的OOM问题已经完全解决掉了
 
 ## Metaspace组成说明
 
@@ -50,14 +50,14 @@ tags: jvm
 * NoKlass Metaspace
 
 ### 组成说明
-* Klass Metaspace就是用来存klass的，klass就是class文件在jvm里的运行时数据结构。这块内存是紧接着Heap的，这块内存大小可通过-XX:CompressedClassSpaceSize参数来控制，这个参数默认是1G，但是这块内存也可以没有，假如没有开启压缩指针就不会有这块内存，这种情况下klass都会存在NoKlass Metaspace里，另外如果把-Xmx设置大于32G的话，其实也是没有这块内存的，因为会这么大内存会关闭压缩指针开关。还有就是这块内存最多只会存在一块。
-* NoKlass Metaspace专门来存klass相关的其他的内容，比如method，constantPool等，这块内存是由多块内存组合起来的，所以可以认为是不连续的内存块组成的。这块内存是必须的，虽然叫做NoKlass Metaspace，但是也其实可以存klass的内容，上面已经提到了对应场景。
-* Klass Metaspace和NoKlass Mestaspace都是所有classloader共享的，所以类加载器要分配内存，但是每个类加载器都有一个SpaceManager，来管理属于这个类加载的内存小块。如果Klass Metaspace用完了，那就会OOM了，不过一般情况下不会，NoKlass Mestaspace是由一块块内存慢慢组合起来的，在没有达到限制条件的情况下，会不断加长这条链，让它可以持续工作
+* `Klass Metaspace`就是用来存klass的，klass就是class文件在jvm里的运行时数据结构。这块内存是紧接着Heap的，这块内存大小可通过-XX:CompressedClassSpaceSize参数来控制，这个参数默认是1G，但是这块内存也可以没有，假如没有开启压缩指针就不会有这块内存，这种情况下klass都会存在NoKlass Metaspace里，另外如果把-Xmx设置大于32G的话，其实也是没有这块内存的，因为会这么大内存会关闭压缩指针开关。还有就是这块内存最多只会存在一块。
+* `NoKlass Metaspace`专门来存klass相关的其他的内容，比如method，constantPool等，这块内存是由多块内存组合起来的，所以可以认为是不连续的内存块组成的。这块内存是必须的，虽然叫做NoKlass Metaspace，但是也其实可以存klass的内容，上面已经提到了对应场景。
+* `Klass Metaspace和NoKlass Mestaspace`都是所有classloader共享的，所以类加载器要分配内存，但是每个类加载器都有一个SpaceManager，来管理属于这个类加载的内存小块。如果Klass Metaspace用完了，那就会OOM了，不过一般情况下不会，NoKlass Mestaspace是由一块块内存慢慢组合起来的，在没有达到限制条件的情况下，会不断加长这条链，让它可以持续工作
 
 ## metaspace总结
 
 ### 引入Metaspace对PermGen配置影响
-* 这里要注意MaxPermSize的区别，MaxMetaspaceSize并不会在jvm启动的时候分配一块这么大的内存出来，而MaxPermSize是会分配一块这么大的内存的
+* 这里要注意MaxPermSize的区别，`MaxMetaspaceSize`并不会在jvm启动的时候分配一块这么大的内存出来，而MaxPermSize是会分配一块这么大的内存的
 * VM的参数：PermSize 和 MaxPermSize 会被忽略并给出警告（如果在启用时设置了这两个参数）。
 
 ### Metaspace 内存分配模型
