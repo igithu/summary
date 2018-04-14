@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "HBase宕机恢复总结"
+title: "HBase RegionServer宕机恢复总结"
 date: 2018-04-14
 tags: hbase
 ---
