@@ -2,7 +2,7 @@
 layout: post
 title: "HBase宕机恢复总结"
 date: 2018-04-14
-tags: jvm
+tags: hbase
 ---
 
 # 背景
