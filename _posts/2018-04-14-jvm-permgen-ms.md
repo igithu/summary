@@ -8,7 +8,7 @@ tags: jvm
 
 
 # 背景
-这里简单总结下 Java8内存结构区别之一：MetaSpace
+&emsp;&emsp;这里简单总结下 Java8内存结构区别之一：MetaSpace
 
 
 # Java7 PermGen
