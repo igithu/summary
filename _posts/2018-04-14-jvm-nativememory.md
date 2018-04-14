@@ -8,7 +8,8 @@ tags: jvm
 # JVM
 
 &emsp;&emsp;JVM使用的内存笼统上划分总共分为：Heap Memory和Native Memory(很多文档都说Heap Memory，但是我理解这是个广义泛指 应该包括Java heap，方法区， 计数器，本地方法栈等）
-Heap Memory及其内部各组成的大小可以通过JVM的一系列命令行参数来控制 Native Memory也称为C-Heap，是供JVM自身进程使用的。Native Memory没有相应的参数来控制大小，其大小依赖于操作系统进程的最大值（对于32位系统就是3~4G，各种系统的实现并不一样），以及生成的Java字节码大小、创建的线程数量、维持java对象的状态信息大小（用于GC）以及一些第三方的包，比如JDBC驱动使用的native内存
+&emsp;&emsp;Heap Memory及其内部各组成的大小可以通过JVM的一系列命令行参数来控制 Native Memory也称为C-Heap，是供JVM自身进程使用的。
+&emsp;&emsp;Native Memory没有相应的参数来控制大小，其大小依赖于操作系统进程的最大值（对于32位系统就是3~4G，各种系统的实现并不一样），以及生成的Java字节码大小、创建的线程数量、维持java对象的状态信息大小（用于GC）以及一些第三方的包，比如JDBC驱动使用的native内存
 
 # Native Memory
 
