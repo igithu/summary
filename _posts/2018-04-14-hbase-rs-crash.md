@@ -6,7 +6,7 @@ tags: hbase
 ---
 
 # 背景
-HBase宕机恢复是HBase一个重要部分，依靠这样一个宕机恢复机制，能够完成保证数据不丢失
+&emsp;&emsp;HBase宕机恢复是HBase一个重要部分，依靠这样一个宕机恢复机制，能够完成保证数据不丢失
 
 # 参考文档
 * [HBase源码：HMaster启动过程](https://yq.aliyun.com/articles/25837)
