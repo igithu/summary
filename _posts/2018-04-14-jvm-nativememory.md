@@ -24,12 +24,15 @@ Heap Memory及其内部各组成的大小可以通过JVM的一系列命令行参
 &emsp;&emsp;使用DirectBuffer可用通过调用函数ByteBuffer.allocateDirect() 来进行获取，使用DirectBuffer整体上访问更快，避免了从HeapBuffer还需要从java堆拷贝到本地堆，操作系统直接访问的是DirectBuffer。DirectBuffer对象的数据实际是保存在native heap中，换句话说：DirectBuffer是分成两个部分 一部分是在JVM Heap Memory内部 主要存储的地址address（DirectBuffer自身是在Java 堆内的），另一部数据部分是存储Native Memory主要是通过底层malloc进行分配的（这部分并不是内核态，而是处在用户态上）
 
 &emsp;&emsp;但是引用保存在HeapBuffer中。 另外，DirectBuffer的引用是直接分配在堆得Old区的，因此其回收时机是在FullGC时。因此，需要避免频繁的分配DirectBuffer，这样很容易导致Native Memory溢出。
+  
+  
+  
+  
+  
+  
+  
 
-  
-  
-  
-
-参考文档
+# 参考文档
 
 [JVM的Heap Memory和Native Memory](http://mahaijin.github.io/2015/04/27/JVM%E7%9A%84Heap%20Memory%E5%92%8CNative%20Memory/)
 
