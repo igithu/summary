@@ -53,4 +53,8 @@ kramdown:
   input: GFM # Enable GitHub Flavored Markdown (fenced code blocks)
   hard_wrap: true
 
+### Theme Color
+theme_color:
+    theme: '#9ACD32'    ##the defaut theme color is blue
+
 exclude: ['README.md', 'LICENSE']
