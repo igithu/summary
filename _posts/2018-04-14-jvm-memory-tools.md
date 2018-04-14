@@ -33,6 +33,16 @@ tags: jvm
       
 # PMAP
 &emsp;&emsp;pmap命令用于报告`进程的内存映射关系`，是Linux调试及运维一个很好的工具。
+&emsp;&emsp;pmap效果
+`
+&emsp;&emsp;&emsp;000000005d0fd000      12       0       0 -----    [ anon ]
+&emsp;&emsp;&emsp;000000005d100000    1016      96      96 rw---    [ anon ]
+&emsp;&emsp;&emsp;000000005d1fe000      12       0       0 -----    [ anon ]
+&emsp;&emsp;&emsp;000000005d201000    1016      96      96 rw---    [ anon ]
+&emsp;&emsp;&emsp;0000000770000000 2359296  594260  594260 rw---    [ anon ]
+&emsp;&emsp;&emsp;00007f67a4800000  118784   11464   11464 rw---    [ anon ]
+&emsp;&emsp;&emsp;00007f67abd7d000      80      24       0 r-x--  libz.so.1.2.3
+`
 
 ## 选项
 * -x：显示扩展格式；
