@@ -26,7 +26,7 @@ tags: jvm
 
 ## PermGen
 ## 概念
-* PermGen Space的全称是Permanent Generation space, 是指内存的永久保存区.
+* PermGen Space的全称是 `Permanent Generation space`, 是指内存的永久保存区.
 * 这一部分用于存放Class和Meta的信息，Class在被 Load的时候被放入PermGen Space区域，Class和存放Instance的Heap区域不同， GC不会在主程序运行期对PermGen Space进行清理
 * GC(Garbage Collection)不会在主程序运行期对PermGen space进行清理，所以如果APP会LOAD很多CLASS 的话,就很可能出现PermGen space错误。PermGen中对象可回收的条件是，ClassLoader可以被回收 其下的所有加载过的没有对应实例的类信息（保存在PermGen）可被回收
 
