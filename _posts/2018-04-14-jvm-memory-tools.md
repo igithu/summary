@@ -16,10 +16,7 @@ tags: jvm
 ![image01](https://igithu.github.io/summary/images/jvm-heap.jpg)  
   
     
-      
-      
-
-
+     
 # NativeMemoryTracking
 &emsp;&emsp;NMT(`NativeMemoryTracking`)是HotSpot JVM提供跟踪内存的工具，配置到当前环境变量后，可以用jcmd就可以跟踪当前JVM进程内存的事情情况；根据[官方文档](https://docs.oracle.com/javase/8/docs/technotes/guides/vm/nmt-8.html)，目前的发布的版本不支持跟踪第三方Native code使用的内存。
 下面只是做简单介绍，具体查看文档
@@ -30,13 +27,10 @@ tags: jvm
 
 ## 使用
 * 执行命令 `jcmd $pid VM.native_memory detail > detail.log`
-* 查看detail.log信息  
-  
-    
+* 查看detail.log信息   
+   
       
       
-
-
 # PMAP
 &emsp;&emsp;pmap命令用于报告`进程的内存映射关系`，是Linux调试及运维一个很好的工具。
 
@@ -52,11 +46,10 @@ tags: jvm
 * `shared` 表示进程和其他进程共享的内存大小
 
 ## 关于anon
-&emsp;&emsp;这里面特意查了下，根据Stack Overflow上面的解释很多：`anon实际上是通过malloc或者mmap底层函数调用接口进行内存分配的`，如果看到很多分配内存大小一样的anon，一般都是在线程栈里面也会分配的内存部分
-
-
-
-
+&emsp;&emsp;这里面特意查了下，根据Stack Overflow上面的解释很多：`anon实际上是通过malloc或者mmap底层函数调用接口进行内存分配的`，如果看到很多分配内存大小一样的anon，一般都是在线程栈里面也会分配的内存部分   
+   
+      
+      
 # 参考文档
 
 * [记一次java native memory增长问题的排查](http://blog.2baxb.me/archives/918)
