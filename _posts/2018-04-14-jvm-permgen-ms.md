@@ -7,7 +7,7 @@ tags: jvm
 
 
 
-# 背景
+# <font color=Chartreuse>背景</font>
 这里简单总结下 Java8内存结构区别之一：MetaSpace
 
 
