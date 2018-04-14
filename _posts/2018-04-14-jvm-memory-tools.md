@@ -13,7 +13,11 @@ tags: jvm
 
 &emsp;&emsp;JVM内存结构（来源网络）
 
-![image01](https://igithu.github.io/summary/images/jvm-heap.jpg)
+![image01](https://igithu.github.io/summary/images/jvm-heap.jpg)  
+  
+    
+      
+      
 
 
 # NativeMemoryTracking
@@ -26,7 +30,11 @@ tags: jvm
 
 ## 使用
 * 执行命令 `jcmd $pid VM.native_memory detail > detail.log`
-* 查看detail.log信息
+* 查看detail.log信息  
+  
+    
+      
+      
 
 
 # PMAP
@@ -51,7 +59,7 @@ tags: jvm
 
 # 参考文档
 
-[记一次java native memory增长问题的排查](http://blog.2baxb.me/archives/918)
-[进程物理内存远大于Xmx的问题分析](http://lovestblog.cn/blog/2015/08/21/rssxmx/)
-[gperftools做堆外内存分析（案例JVM Inflater 内存泄漏分析）](http://www.dylan326.com/2017/09/28/gperftools/)
-[Trying to locate a leak! What does anon mean for pmap?](https://stackoverflow.com/questions/1477885/trying-to-locate-a-leak-what-does-anon-mean-for-pmap)
+* [记一次java native memory增长问题的排查](http://blog.2baxb.me/archives/918)
+* [进程物理内存远大于Xmx的问题分析](http://lovestblog.cn/blog/2015/08/21/rssxmx/)
+* [gperftools做堆外内存分析（案例JVM Inflater 内存泄漏分析）](http://www.dylan326.com/2017/09/28/gperftools/)
+* [Trying to locate a leak! What does anon mean for pmap?](https://stackoverflow.com/questions/1477885/trying-to-locate-a-leak-what-does-anon-mean-for-pmap)
