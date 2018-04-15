@@ -10,5 +10,11 @@ tags: jvm
 ## 各个区域与参数的配置对应关系
 ![image01](https://igithu.github.io/summary/images/jvm-con.png)
 ![image02](https://igithu.github.io/summary/images/gc-ratio.png)
+  
+  
+## Survivor区为什么存在
+
+## 为什么存在两个Survivor
+
 
 
