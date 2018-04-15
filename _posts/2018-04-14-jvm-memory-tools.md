@@ -6,10 +6,22 @@ tags: jvm
 ---
 
 # JDK自带命令
+## jmap
 * `jmap -heap $pid`, 查看java 堆内是否异常
 * `jmap -histo  $pid`, 查看对象内训使用情况
 * `jmap -dump:format=b,file=heap.bin $pid && jhat -J-mx768m -port <端口号:默认为7000> heap.bin`.  对java做了一次heap dump，jhat之后再web中查看内存使用情况
-* jstack：严格意义上不算是排查内存工具，jstack可以查看当前进程线程运行情况，内存方面 可以复查一下stack dump里的global jni reference是否一直在增长，如果一直在增长，jni调用可能存在内存溢出, JVM内存结构（来源网络）
+## jstat
+* 实时监视虚拟机运行时的类装载情况、各部分内存占用情况、GC情况、JIT编译情况等
+* 命令：`jstat –gc $pid $interval` $查询次数
+## jstack
+* jstack：严格意义上不算是排查内存工具，jstack可以查看当前进程线程运行情况，内存方面 可以复查一下stack dump里的global jni reference是否一直在增长，如果一直在增长，jni调用可能存在内存溢出,
+## GC日志
+### GC日志的输出
+
+### GC日志
+
+
+JVM内存结构（来源网络）
 
 ![image01](https://igithu.github.io/summary/images/jvm-heap.jpg)
   
