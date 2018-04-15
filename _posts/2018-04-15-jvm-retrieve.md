@@ -9,5 +9,6 @@ tags: jvm
 # JVM堆内结构
 ## 各个区域与参数的配置对应关系
 ![image01](https://igithu.github.io/summary/images/jvm-con.png)
+![image02](https://igithu.github.io/summary/images/gc-ratio.png)
 
 
