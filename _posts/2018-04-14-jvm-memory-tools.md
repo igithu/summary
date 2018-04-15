@@ -5,7 +5,7 @@ date: 2018-04-14
 tags: jvm
 ---
 
-# JDK自带命令
+# JDK
 ## jmap
 * `jmap -heap $pid`, 查看java 堆内是否异常
 * `jmap -histo  $pid`, 查看对象内训使用情况
@@ -32,11 +32,6 @@ tags: jvm
 
 ![image04](https://igithu.github.io/summary/images/f-gc.gif)
 
-
-
-JVM内存结构（来源网络）
-
-![image01](https://igithu.github.io/summary/images/jvm-heap.jpg)
   
     
      
