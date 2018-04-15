@@ -27,7 +27,9 @@ tags: jvm
 
 ### GC日志输出
 （网图）
-![image03](https://igithu.github.io/summary/images/fm-fc.gif)
+![image03](https://igithu.github.io/summary/images/m-fc.gif)
+![image04](https://igithu.github.io/summary/images/f-fc.gif)
+
 
 
 JVM内存结构（来源网络）
