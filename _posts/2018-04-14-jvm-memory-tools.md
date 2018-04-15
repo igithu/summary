@@ -16,9 +16,18 @@ tags: jvm
 ## jstack
 * jstack：严格意义上不算是排查内存工具，jstack可以查看当前进程线程运行情况，内存方面 可以复查一下stack dump里的global jni reference是否一直在增长，如果一直在增长，jni调用可能存在内存溢出,
 ## GC日志
-### GC日志的输出
+### GC日志的输出配置
+* -XX:+PrintGC 输出GC日志 
+* -XX:+PrintGCDetails 输出GC的详细日志 
+* -XX:+PrintGCTimeStamps 输出GC的时间戳（以基准时间的形式） 
+* -XX:+PrintGCDateStamps 输出GC的时间戳（以日期的形式，如 2013-05-04T21:53:59.234+0800） 
+* -XX:+PrintHeapAtGC 在进行GC的前后打印出堆的信息 
+* -XX:+PrintGCApplicationStoppedTime // 输出GC造成应用暂停的时间 
+* -Xloggc:../logs/gc.log 日志文件的输出路径
 
-### GC日志
+### GC日志输出
+（网图）
+![image03](https://igithu.github.io/summary/images/fm-fc.gif)
 
 
 JVM内存结构（来源网络）
