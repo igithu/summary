@@ -18,57 +18,7 @@ tags: hbase
 
 #### 主要代码段
 ```java
-/**
-   * @param info
-   * @param tableName
-   * @param edits
-   * @param clusterId The originating clusterId for this edit (for replication)
-   * @param now
-   * @param doSync shall we sync?
-   * @param replayed edit is replayed or not
-   * @return txid of this transaction
-   * @throws IOException
-   */
-  private long append(HRegionInfo info, byte [] tableName, WALEdit edits, UUID clusterId,
-      final long now, HTableDescriptor htd, boolean doSync, boolean replayed)
-    throws IOException {
-      if (edits.isEmpty()) return -1;
-      if (this.closed) {
-        throw new IOException("Cannot append; log is closed");
-      }
-      long txid = 0;
-      long start = System.currentTimeMillis();
-      byte[] encodedRegionName = info.getEncodedNameAsBytes();
-      HashedBytes encodedRegionNameHashBytes = new HashedBytes(encodedRegionName);
-      edits.setReplayed(replayed);
-      
-      EntrySlot slot = asyncProcessor.nextSlot();
-      try {
-        txid = slot.getTxid();
-        long seqNum = obtainSeqNum(txid);
-        this.lastSeqWritten.putIfAbsent(encodedRegionNameHashBytes, seqNum);
-        HLogKey logKey = makeKey(encodedRegionName, tableName, seqNum, now, clusterId);
-        doWrite(slot, info, logKey, edits, htd);
-      } finally {
-        slot.publish();
-      }
 
-      this.numEntries.incrementAndGet();
-      if (htd.isDeferredLogFlush()) {
-        lastDeferredTxid = txid;
-      }
-      // Sync if catalog region, and if not then check if that table supports
-      // deferred log flushing
-      if (doSync && 
-          (info.isMetaRegion() ||
-          !htd.isDeferredLogFlush())) {
-        // sync txn to file system
-        this.sync(txid);
-      }
-      long took = System.currentTimeMillis() - start;
-      doWALTime.inc(took);
-      return txid;
-    }
 ```
 
 
