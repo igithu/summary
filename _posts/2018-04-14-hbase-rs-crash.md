@@ -14,7 +14,7 @@ tags: hbase
 ## HLog构建数据
 &emsp;&emsp;HBase中，WAL的实现类为HLog （`在0.98中实际上是FSHLog去实现执行，以下统称为HLog`）,在写入的时候，每个Region Server拥有一个HLog日志，所有region的写入都是写到同一个HLog，写入时候RegionServer就会调用HLog.append()，将数据对<HLogKey,WALEdit>按照顺序追加到HLog中
 #### 主要结构（网图）
-![image01](https://igithu.github.io/summary/images/jhlog.png)
+![image01](https://igithu.github.io/summary/images/hlog.png)
 
 #### 主要代码段
 ```java
