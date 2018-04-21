@@ -146,12 +146,25 @@ tags: hbase
 
 ## HLog Roll
 &emsp;&emsp;HBase后台启动了线程LogRoller，会每隔一段时间（由参数’hbase.regionserver.logroll.period’决定）进行日志滚动，即新生成一个新的日志文件。同时HLog日志文件并不是一个大文件，而是会产生很多小文件。这样做为了能够及时删除掉“过期”已经没有用的日志数据
-### Roll过程关键
-&emsp;&emsp;Roll过程关键组就包括：AsyncNotifier：异步通知组件使用。AsyncSyncer接收该同志可以进行next sync；AsyncSyncer：向AsyncWriter发送持久化WALEdit到HDFS的请求.；AsyncWriter：flush本地的buffere到HDFS上
-* Write Handler会日志数据向HLog写入pending buffer中，之后也会notify到AsyncWriter线程有新的WALEdit是数据在local buffer中
+### Roll主要组件
+&emsp;&emsp;以下点位记录都是<=xxxxtxid都是已完成操作
+* AsyncNotifier：异步通知组件使用，主要notify pending在Buffer上的Write Handler
+  * `flushedTxid`：记录最后的flush点位，在AsyncWriter sync之后更新为lastSyncedTxid
+  * `lastNotifiedTxid`：上次notify的点位，主要在flushedTxid被更新的时候，会给更新为flushedTxid
+  * `flushedTxid <= this.lastNotifiedTxid`时， AsyncNotifier会进入wait，直到flushedTxid更新
+* AsyncSyncer：主要负责向AsyncWriter发送sync请求 
+  * `writtenTxid`：写入WALEdits数据点位，<=writtenTxid都已经写入
+  * `lastSyncedTxid`：最后sync的点位
+  * `writtenTxid <= lastSyncedTxid`时AsyncSyncer进入wait状态
+* AsyncWriter：主要负责flush本地Buffer中的数据，将WALEdit数据持久化到HDFS上
+  * `pendingTxid`：Write Handler pending的点位
+  * `lastWrittenTxid`：记录上一次写入的点位
+  * `pendingTxid <= lastWrittenTxid`时，AsyncWriter会进入wait状态，直到writtenTxid被更新
+### Roll关键过程
+* Write Handler将日志数据向HLog写入pending buffer中，之后notify到AsyncWriter线程：有新的WALEdit是数据在local buffer中
 * Write Handler接下来会等待下游线程HLog.sync()完成同步（以txid为单位）
-* AsyncWriter 线程会在后台收集在pending buffer中的WALEdit Log数据，flush只写数据到HDFS上，notify AsyncSyncer在pending buffer一部分已经flush掉，可以进行下一步的sync
-* AsyncNotifier负责通知pending在pending buffer上的Write Handler
+* AsyncWriter 线程会在后台收集在pending buffer中的WALEdit Log数据，flush只写数据到HDFS上，notify AsyncSyncer在pending buffer一部分已经flush到HDFS上，可以进行下一步的sync
+
 
 ### Roll相关代码
 
