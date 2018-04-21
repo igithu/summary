@@ -147,11 +147,11 @@ tags: hbase
 ## HLog Roll
 &emsp;&emsp;HBase后台启动了线程LogRoller，会每隔一段时间（由参数’hbase.regionserver.logroll.period’决定）进行日志滚动，即新生成一个新的日志文件。同时HLog日志文件并不是一个大文件，而是会产生很多小文件。这样做为了能够及时删除掉“过期”已经没有用的日志数据
 ### Roll主要组件
-&emsp;&emsp;以下点位记录都是<=xxxxtxid都是已完成操作
+&emsp;&emsp;以下点位记录<=xxxxtxid，都是已完成状态
 * AsyncNotifier：异步通知组件使用，主要notify pending在Buffer上的Write Handler
   * `flushedTxid`：记录最后的flush点位，在AsyncWriter sync之后更新为lastSyncedTxid
   * `lastNotifiedTxid`：上次notify的点位，主要在flushedTxid被更新的时候，会给更新为flushedTxid
-  * `flushedTxid <= this.lastNotifiedTxid`时， AsyncNotifier会进入wait，直到flushedTxid更新
+  * `flushedTxid <= lastNotifiedTxid`时， AsyncNotifier会进入wait，直到flushedTxid更新
 * AsyncSyncer：主要负责向AsyncWriter发送sync请求 
   * `writtenTxid`：写入WALEdits数据点位，<=writtenTxid都已经写入
   * `lastSyncedTxid`：最后sync的点位
@@ -160,6 +160,11 @@ tags: hbase
   * `pendingTxid`：Write Handler pending的点位
   * `lastWrittenTxid`：记录上一次写入的点位
   * `pendingTxid <= lastWrittenTxid`时，AsyncWriter会进入wait状态，直到writtenTxid被更新
+* 点位(txid)之间关系
+  ![image02](https://igithu.github.io/summary/images/txid.png)
+
+
+
 ### Roll关键过程
 * Write Handler将日志数据向HLog写入pending buffer中，之后notify到AsyncWriter线程：有新的WALEdit是数据在local buffer中
 * Write Handler接下来会等待下游线程HLog.sync()完成同步（以txid为单位）
