@@ -138,9 +138,9 @@ tags: hbase
 
 ```
 &emsp;&emsp;其中HLogKey由sequenceid、writetime、clusterid、regionname以及tablename组成 其中对于sequenceid
-* sequenceid是自增序号。很好理解，就是随着时间推移不断自增，不会减小。
-* sequenceid是一次行级事务的自增序号。行级事务是什么？简单点说，就是更新一行中的多个列族、多个列，行级事务能够保证这次更新的原子性、一致性、持久性以及设置的隔离性，HBase会为一次行级事务分配一个自增序号。
-* sequenceid是region级别的自增序号。每个region都维护属于自己的sequenceid，不同region的sequenceid相互独立。
+* 自增序号。很好理解，就是随着时间推移不断自增，不会减小。
+* 一次行级事务的自增序号。行级事务是什么？简单点说，就是更新一行中的多个列族、多个列，行级事务能够保证这次更新的原子性、一致性、持久性以及设置的隔离性，HBase会为一次行级事务分配一个自增序号。
+* 是region级别的自增序号。每个region都维护属于自己的sequenceid，不同region的sequenceid相互独立。
 * 这里提一下，实际上后续新版1.x版本以上 HBase中已经将mvcc和sequenceid合并在一起
 
 
