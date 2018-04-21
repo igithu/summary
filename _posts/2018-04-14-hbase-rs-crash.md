@@ -16,7 +16,7 @@ tags: hbase
 #### 主要结构（网图）
 ![image01](https://igithu.github.io/summary/images/hlog.png)
 
-#### 主要代码段
+#### 主要代码段（HBase版本：0.98.8）
 ```java
 /**
    * Append a set of edits to the log. Log edits are keyed by (encoded)
@@ -145,6 +145,7 @@ tags: hbase
 
 
 ## HLog Roll
+
 ## HLog失效
 ## HLog清除
 
