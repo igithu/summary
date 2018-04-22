@@ -169,7 +169,18 @@ tags: hbase
 * Write Handler将日志数据向HLog写入pending buffer中，之后notify到AsyncWriter线程：有新的WALEdit是数据在local buffer中
 * Write Handler接下来会等待下游线程HLog.sync()完成同步（以txid为单位）
 * AsyncWriter 线程会在后台收集在pending buffer中的WALEdit Log数据，flush只写数据到HDFS上，notify AsyncSyncer在pending buffer一部分已经flush到HDFS上，可以进行下一步的sync
-
+* 关于异步模式，以下代码为比较关键的代码
+```java
+        // TODO: note that only tests currently call append w/sync.
+        //       Therefore, this code here is not actually used by anything.
+        // Sync if catalog region, and if not then check if that table supports
+        // deferred log flushing
+        if (doSync &&
+            (info.isMetaRegion() ||
+            !htd.isDeferredLogFlush())) {
+          // sync txn to file system
+          this.sync(txid);
+ ```
 
 ### Roll相关代码
 
