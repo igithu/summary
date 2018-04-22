@@ -351,3 +351,6 @@ tags: hbase
 # 参考文档
 * [HBase源码：HMaster启动过程](https://yq.aliyun.com/articles/25837)
 
+* [HBase原理－RegionServer宕机数据恢复](http://hbasefly.com/2016/10/29/hbase-regionserver-recovering/)
+
+
