@@ -180,12 +180,171 @@ tags: hbase
             !htd.isDeferredLogFlush())) {
           // sync txn to file system
           this.sync(txid);
+         }
  ```
 
 ### Roll相关代码
+* AsyncNotifier部分
+ ```java
+        while (!this.isInterrupted()) {
+          synchronized (this.notifyLock) {
+            while (this.flushedTxid <= this.lastNotifiedTxid) {
+              this.notifyLock.wait();
+            }
+            this.lastNotifiedTxid = this.flushedTxid;
+          }
 
+          // notify(wake-up) all pending (write) handler thread
+          // (or logroller thread which also may pend on sync())
+          synchronized (syncedTillHere) {
+            syncedTillHere.set(this.lastNotifiedTxid);
+            syncedTillHere.notifyAll();
+          }
+        }
+ ```
+* AsyncSyncer部分
+ ```java
+        while (!this.isInterrupted()) {
+          // 1. wait until AsyncWriter has written data to HDFS and
+          //    called setWrittenTxid to wake up us
+          synchronized (this.syncLock) {
+            while (this.writtenTxid <= this.lastSyncedTxid) {
+              this.syncLock.wait();
+            }
+            this.txidToSync = this.writtenTxid;
+          }
 
+          // if this syncer's writes have been synced by other syncer:
+          // 1. just set lastSyncedTxid
+          // 2. don't do real sync, don't notify AsyncNotifier, don't logroll check
+          // regardless of whether the writer is null or not
+          if (this.txidToSync <= syncedTillHere.get()) {
+            this.lastSyncedTxid = this.txidToSync;
+            continue;
+          }
+
+          // 2. do 'sync' to HDFS to provide durability
+          long now = EnvironmentEdgeManager.currentTimeMillis();
+          try {
+            if (writer == null) {
+              // the only possible case where writer == null is as below:
+              // 1. t1: AsyncWriter append writes to hdfs,
+              //        envokes AsyncSyncer 1 with writtenTxid==100
+              // 2. t2: AsyncWriter append writes to hdfs,
+              //        envokes AsyncSyncer 2 with writtenTxid==200
+              // 3. t3: rollWriter starts, it grabs the updateLock which
+              //        prevents further writes entering pendingWrites and
+              //        wait for all items(200) in pendingWrites to append/sync
+              //        to hdfs
+              // 4. t4: AsyncSyncer 2 finishes, now syncedTillHere==200
+              // 5. t5: rollWriter close writer, set writer=null...
+              // 6. t6: AsyncSyncer 1 starts to use writer to do sync... before
+              //        rollWriter set writer to the newly created Writer
+              //
+              // Now writer == null and txidToSync > syncedTillHere here:
+              // we need fail all the writes with txid <= txidToSync to avoid
+              // 'data loss' where user get successful write response but can't
+              // read the writes!
+              LOG.fatal("should never happen: has unsynced writes but writer is null!");
+              asyncIOE = new IOException("has unsynced writes but writer is null!");
+              failedTxid.set(this.txidToSync);
+            } else {
+              this.isSyncing = true;            
+              writer.sync();
+              this.isSyncing = false;
+            }
+            postSync();
+          } catch (IOException e) {
+            LOG.fatal("Error while AsyncSyncer sync, request close of hlog ", e);
+            requestLogRoll();
+
+            asyncIOE = e;
+            failedTxid.set(this.txidToSync);
+
+            this.isSyncing = false;
+          }
+          metrics.finishSync(EnvironmentEdgeManager.currentTimeMillis() - now);
+
+          // 3. wake up AsyncNotifier to notify(wake-up) all pending 'put'
+          // handler threads on 'sync()'
+          this.lastSyncedTxid = this.txidToSync;
+          asyncNotifier.setFlushedTxid(this.lastSyncedTxid);
+
+          // 4. check and do logRoll if needed
+          boolean logRollNeeded = false;
+          if (rollWriterLock.tryLock()) {
+            try {
+              logRollNeeded = checkLowReplication();
+            } finally {
+              rollWriterLock.unlock();
+            }            
+            try {
+              if (logRollNeeded || writer != null && writer.getLength() > logrollsize) {
+                requestLogRoll();
+              }
+            } catch (IOException e) {
+              LOG.warn("writer.getLength() failed,this failure won't block here");
+            }
+          }
+        }
+ ```
+* AsyncWriter部分
+ ```java
+        while (!this.isInterrupted()) {
+          // 1. wait until there is new writes in local buffer
+          synchronized (this.writeLock) {
+            while (this.pendingTxid <= this.lastWrittenTxid) {
+              this.writeLock.wait();
+            }
+          }
+
+          // 2. get all buffered writes and update 'real' pendingTxid
+          //    since maybe newer writes enter buffer as AsyncWriter wakes
+          //    up and holds the lock
+          // NOTE! can't hold 'updateLock' here since rollWriter will pend
+          // on 'sync()' with 'updateLock', but 'sync()' will wait for
+          // AsyncWriter/AsyncSyncer/AsyncNotifier series. without updateLock
+          // can leads to pendWrites more than pendingTxid, but not problem
+          List<Entry> pendWrites = null;
+          synchronized (pendingWritesLock) {
+            this.txidToWrite = unflushedEntries.get();
+            pendWrites = pendingWrites;
+            pendingWrites = new LinkedList<Entry>();
+          }
+
+          // 3. write all buffered writes to HDFS(append, without sync)
+          try {
+            for (Entry e : pendWrites) {
+              writer.append(e);
+            }
+          } catch(IOException e) {
+            LOG.error("Error while AsyncWriter write, request close of hlog ", e);
+            requestLogRoll();
+
+            asyncIOE = e;
+            failedTxid.set(this.txidToWrite);
+          }
+
+          // 4. update 'lastWrittenTxid' and notify AsyncSyncer to do 'sync'
+          this.lastWrittenTxid = this.txidToWrite;
+          boolean hasIdleSyncer = false;
+          for (int i = 0; i < asyncSyncers.length; ++i) {
+            if (!asyncSyncers[i].isSyncing()) {
+              hasIdleSyncer = true;
+              asyncSyncers[i].setWrittenTxid(this.lastWrittenTxid);
+              break;
+            }
+          }
+          if (!hasIdleSyncer) {
+            int idx = (int)(this.lastWrittenTxid % asyncSyncers.length);
+            asyncSyncers[idx].setWrittenTxid(this.lastWrittenTxid);
+          }
+        }
+ ```
 ## HLog失效
+
+
+
 ## HLog清除
 
 
