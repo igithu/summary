@@ -10,6 +10,9 @@ tags: hdfs
 &emsp;&emsp;当文件创建或打开时，HDFS写操作创建一个pipeline，用以在DataNode间传输和存储数据
 ![image01](https://igithu.github.io/summary/images/recover-f1.png)
 
+# Lease Recovery
+# Block Recovery
+# Pipeline Recovery
 
 
 
