@@ -7,6 +7,9 @@ tags: hdfs
 
 # 背景
 &emsp;&emsp;HDFS的Recover机制，主要针对异常文件关闭进行recover操作，目的是保证已经写入的数据的可读性，最大程度保证数据对外服务的稳定性；HDFS提供Lease Recovery, Block Recovery和Pipeline Recovery等Recovery机制用于容错
+&emsp;&emsp;当文件创建或打开时，HDFS写操作创建一个pipeline，用以在DataNode间传输和存储数据
+![image01](https://igithu.github.io/summary/images/recover-f1.png)
+
 
 
 
