@@ -16,6 +16,21 @@ tags: hdfs
 * 在写数据的过程中，如果文件的最last block没有写到pipeline的所有DataNodes中，则在Lease Recovery后，不同节点的数据将不同。在Lease Recovery 关闭文件前，需保证所有复本最后一个block有相同的长度，这个过程称为 Block Recovery。仅仅当文件最后一个block不处于COMPLETE状态时，Lease Recovery才会解决Block Recovery。
 * 在pipeline写过程中，pipeline中的DataNode可能出现异常，为保证写操作不失败，HDFS需从错误中恢复并保证pipeline继续写下去。从pipeline错误中恢复的过程称为Pipeline Recovery
 
+# Recover过程需要知道的
+## Replica状态
+### FINALIZED
+### RBW (Replica Being Written)
+### RWR (Replica Waiting to be Recovered)
+### RUR (Replica Under Recovery)
+### TEMPORARY
+
+## Block状态
+### UNDER_CONSTRUCTION
+### UNDER_RECOVERY
+### COMMITTED
+### COMPLETE
+
+
 # Lease Recovery
 # Block Recovery
 # Pipeline Recovery
