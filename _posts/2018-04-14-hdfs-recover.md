@@ -16,7 +16,7 @@ tags: hdfs
 * 在写数据的过程中，如果文件的最last block没有写到pipeline的所有DataNodes中，则在Lease Recovery后，不同节点的数据将不同。在Lease Recovery 关闭文件前，需保证所有复本最后一个block有相同的长度，这个过程称为 Block Recovery。仅仅当文件最后一个block不处于COMPLETE状态时，Lease Recovery才会解决Block Recovery。
 * 在pipeline写过程中，pipeline中的DataNode可能出现异常，为保证写操作不失败，HDFS需从错误中恢复并保证pipeline继续写下去。从pipeline错误中恢复的过程称为Pipeline Recovery
 
-# Recover过程需要知道的
+# Recover过程中的重要元素
 说明：我们把DataNode上的块Block叫做副本（Replica），以区别于NameNode上的块
 ## Replica状态
 ### FINALIZED
@@ -54,9 +54,39 @@ tags: hdfs
 * 只有当所有Block都进入COMPLETE，所在文件才能被Closed。
 * 有时候Block会被强制进入COMPLETE，例如Client请求分配新的Block。但是前面申请的Block没有在COMPLETE
 
-# Lease Recovery
-# Block Recovery
-# Pipeline Recovery
+## HDFS的Lease和LeaseManager
+### Lease
+&emsp;&emsp;Lease是为了实现一个文件在一个时刻只能被一个客户端写。Client写文件时需要先申请一个Lease，一旦有客户端持有了某个文件的Lease，其它Client就不可能再申请到该文件的Lease，这就保证了同一时刻对一个文件的写操作只能发生在一个客户端。Client写数据的过程中，后台线程会续租（renew lease）
+&emsp;&emsp;NameNode的LeaseManager是Lease机制的核心，维护了文件与Lease、客户端与Lease的对应关系，这些信息会随写入数据的变化实时发生对应改变
+### LeaseManager
+* 核心数据结构
+  * leases：记录Client（leaseHolder）与Lease的映射关系
+  * sortedLeases：Lease集合
+  * sortedLeasesByPath：文件路径到Lease的映射关系
+* Limit超时控制
+  * softLimit：默认时间, 60s.
+    * softLimit到期之前，一个Client拥有对他的文件的独立访问权，其他Client不能剥夺该客户端独占写这个文件的权利
+    * softLimit到期之后，其他任何一个Client都可以回收lease，继而得到这个文件的lease，获得对这个文件的独占访问权
+  * hardLimit：默认时间, 1hour. 到期之后，NameNode会对当前Lease进行强制回收
+  * 所有回收Lease入口全部通过FSNamesystem.internalReleaseLease实现
+
+
+# HDFS Recover
+
+## Recover触发
+&emsp;&emsp;当Client（典型的主要是HBase RegioServer）突然宕机或者与HDFS中断的连接，在softLimit过期之前，其他Client无法写入数据，期间无论写入或者调用recoverLease操作都会有softLimit判断；softLimit过期之后，会检查当前文件是否被close掉（实际通过INodeFile.isUnderConstruction()判断），如果没有则进入recover流程，其中Lease Recovery和Block Recovery主要目的是使文件的Last block的所有Replica数据达到一致.
+&emsp;&emsp;实际Lease Recovery过程包含Block Recovery，Lease Recovery是整个过程的驱动者，Block Recovery是DataNode上的Block Recovery执行过程；这里为了描述清晰，分开描述
+
+## Lease Recovery
+当其他客户端试图获取当前文件的Lease时候，就会进入Lease Recovery；入口：FSNamesystem.internalReleaseLease
+* 文件所有的Block都Complete直接关闭文件即可，但是有Block小于配置最小副本数，会抛出异常AlreadyBeingCreatedException
+* 如果对应文件的Block在现有的DataNode上都不存在，则直接remove Block然后进行文件关闭操作
+* BlockRecover准备，获取blockRecoveryId（实际为GS），更新Leaseholder（reassignLease， renewLease），
+* 初始化BlockRecover（initializeBlockRecovery）
+
+## Block Recovery
+如果一个文件需要block recovery，NameNode从拥有该文件最后一个block的replica的DataNodes中挑选一个primary DataNode，使其DataNode协调其余DataNodes进行block recovery。
+## Pipeline Recovery
 
 
 
