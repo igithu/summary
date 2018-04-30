@@ -84,12 +84,12 @@ tags: hdfs
 ## Lease Recovery/Block Recovery
 当其他客户端试图获取当前文件的Lease时候，就会进入Lease Recovery；入口：FSNamesystem.internalReleaseLease，整体运行过程分为：
 * Lease Recovery预处理：NameNode执行
-* Block Recovery进行实际的Recover：DataNode执行
+* Block Recovery进行实际的Recover：NameNode，DataNode执行
 * Lease Recovery后处理更新Block Info：NameNode执行
 
 ### Lease Recovery预处理
-* NameNode找到"Last Block"所在的DataNode，然后将其作为primary DataNode，该primary DataNode作为主导DataNode存在协调进行Block Recovery 
-* 将当前Block更新到primary DataNode的Description下的recoverBlocks中，之后handleHeartbeat会捕捉到进一步处理
+* NameNode找到"Last Block"所在的DataNode，然后将其作为Primary DataNode，该Primary DataNode作为主导DataNode存在协调进行Block Recovery 
+* 将当前Block更新到Primary DataNode的Description下的recoverBlocks中，之后handleHeartbeat会捕捉到进一步处理
 * 其他过程
   * 文件所有的Block都Complete直接关闭文件即可，但是有Block小于配置最小副本数，会抛出异常AlreadyBeingCreatedException
   * 如果对应文件的Block在现有的DataNode上都不存在，则直接remove Block然后进行文件关闭操作
@@ -157,10 +157,14 @@ public void initializeBlockRecovery(BlockInfo blockInfo, long recoveryId,
 #### NameNode执行部分
 * NameNode在执行handleHeartbeat，过程中会捕捉到有需要Recovery的Block
 * 执行truncate相关逻辑，过滤stale node：主要30s没有心跳的DataNode
-* 发送BlockRecoveryCommand，RecoverBlock到DataNode进一步进行Recover
+* 发送BlockRecoveryCommand，RecoverBlock到Primary DataNode进一步进行Recover
 #### DataNode执行部分
-&emsp;&emsp;DataNode会接收到NameNode发送来的BlockRecoveryCommand，开始继续Recover；在DataNode上执行Recover的载体主要有BlockRecoveryWorker和其包含的Class：RecoveryTaskContiguous
-BlockRecoveryWorker中启动Task（RecoveryTaskContiguous）开始recover
+在DataNode上执行Recover的载体主要有BlockRecoveryWorker和RecoveryTaskContiguous
+* Primary DataNode会接收到NameNode发送来的BlockRecoveryCommand，开始继续Recover；
+* 从Block所在的DataNode上获取ReplicaRecoveryInfo，包括：GS，Length等。
+* 过滤掉处在RUR，TEMPORARY的Replica
+
+
 ### Lease Recovery确认Recover
 
 
