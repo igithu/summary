@@ -90,40 +90,44 @@ tags: hdfs
   * BlockRecover准备，获取blockRecoveryId（实际为GS），更新Leaseholder（reassignLease， renewLease）
 * 关键代码
 ```java
-public void initializeBlockRecovery(long recoveryId, boolean startRecovery) {
+public void initializeBlockRecovery(BlockInfo blockInfo, long recoveryId,
+      boolean startRecovery) {
     setBlockUCState(BlockUCState.UNDER_RECOVERY);
     blockRecoveryId = recoveryId;
     if (!startRecovery) {
       return;
     }
-    if (replicas.size() == 0) {
-      NameNode.blockStateChangeLog.warn("BLOCK*"
-        + " BlockInfoUnderConstruction.initLeaseRecovery:"
-        + " No blocks found, lease removed.");
+    if (replicas.length == 0) {
+      NameNode.blockStateChangeLog.warn("BLOCK*" +
+          " BlockUnderConstructionFeature.initializeBlockRecovery:" +
+          " No blocks found, lease removed.");
+      // sets primary node index and return.
+      primaryNodeIndex = -1;
+      return;
     }
     boolean allLiveReplicasTriedAsPrimary = true;
-    for (int i = 0; i < replicas.size(); i++) {
+    for (ReplicaUnderConstruction replica : replicas) {
       // Check if all replicas have been tried or not.
-      if (replicas.get(i).isAlive()) {
-        allLiveReplicasTriedAsPrimary =
-            (allLiveReplicasTriedAsPrimary && replicas.get(i).getChosenAsPrimary());
+      if (replica.isAlive()) {
+        allLiveReplicasTriedAsPrimary = allLiveReplicasTriedAsPrimary
+            && replica.getChosenAsPrimary();
       }
     }
     if (allLiveReplicasTriedAsPrimary) {
       // Just set all the replicas to be chosen whether they are alive or not.
-      for (int i = 0; i < replicas.size(); i++) {
-        replicas.get(i).setChosenAsPrimary(false);
+      for (ReplicaUnderConstruction replica : replicas) {
+        replica.setChosenAsPrimary(false);
       }
     }
     long mostRecentLastUpdate = 0;
     ReplicaUnderConstruction primary = null;
     primaryNodeIndex = -1;
-    for(int i = 0; i < replicas.size(); i++) {
+    for (int i = 0; i < replicas.length; i++) {
       // Skip alive replicas which have been chosen for recovery.
-      if (!(replicas.get(i).isAlive() && !replicas.get(i).getChosenAsPrimary())) {
+      if (!(replicas[i].isAlive() && !replicas[i].getChosenAsPrimary())) {
         continue;
       }
-      final ReplicaUnderConstruction ruc = replicas.get(i);
+      final ReplicaUnderConstruction ruc = replicas[i];
       final long lastUpdate = ruc.getExpectedStorageLocation()
           .getDatanodeDescriptor().getLastUpdateMonotonic();
       if (lastUpdate > mostRecentLastUpdate) {
@@ -133,15 +137,17 @@ public void initializeBlockRecovery(long recoveryId, boolean startRecovery) {
       }
     }
     if (primary != null) {
-      primary.getExpectedStorageLocation().getDatanodeDescriptor().addBlockToBeRecovered(this);
+      primary.getExpectedStorageLocation().getDatanodeDescriptor()
+          .addBlockToBeRecovered(blockInfo);
       primary.setChosenAsPrimary(true);
-      NameNode.blockStateChangeLog.info(
+      NameNode.blockStateChangeLog.debug(
           "BLOCK* {} recovery started, primary={}", this, primary);
     }
-  }
+ }
 ```
 
 ## Block Recovery
+&emsp;&emsp;Block Recovery
 
 ## Pipeline Recovery
 
