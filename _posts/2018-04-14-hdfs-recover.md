@@ -35,6 +35,8 @@ tags: hdfs
 ### TEMPORARY
 * 临时Replica主要用于block replication（replication monitor或者cluster balancer）
 * 这个状态和RBW很相似，不过对HDFS Client是不可见的，在block replication失败时候会被删除掉
+### 转换关系
+![image02](https://igithu.github.io/summary/images/rep-state.png)
 
 ## Block状态
 ### UNDER_CONSTRUCTION
@@ -53,6 +55,8 @@ tags: hdfs
 * 当NameNode确认了FINALIZED replicas达到最小副本数（这个Replica已经有固定 GS/length），该Block从COMMITTED进入COMPLETE
 * 只有当所有Block都进入COMPLETE，所在文件才能被Closed。
 * 有时候Block会被强制进入COMPLETE，例如Client请求分配新的Block。但是前面申请的Block没有在COMPLETE
+### 转换关系
+![image03](https://igithu.github.io/summary/images/block-state.png)
 
 ## HDFS的Lease和LeaseManager
 ### Lease
