@@ -79,11 +79,17 @@ tags: hdfs
 
 ## Recover触发
 &emsp;&emsp;当Client（典型的主要是HBase RegioServer）突然宕机或者与HDFS中断的连接，在softLimit过期之前，其他Client无法写入数据，期间无论写入或者调用recoverLease操作都会有softLimit判断；softLimit过期之后，会检查当前文件是否被close掉（实际通过INodeFile.isUnderConstruction()判断），如果没有则进入recover流程，其中Lease Recovery和Block Recovery主要目的是使文件的Last block的所有Replica数据达到一致.
-&emsp;&emsp;实际Lease Recovery过程包含Block Recovery，Lease Recovery是整个过程的驱动者，Block Recovery是DataNode上的Block Recovery执行过程；这里为了描述清晰，分开描述
+&emsp;&emsp;实际Lease Recovery过程包含Block Recovery，Lease Recovery是整个过程的驱动者，Block Recovery是DataNode上的Block Recovery执行过程；
 
-## Lease Recovery
-当其他客户端试图获取当前文件的Lease时候，就会进入Lease Recovery；入口：FSNamesystem.internalReleaseLease
-* NameNode找到"Last Block"所在的DataNode，然后将其作为primary DataNode，primary DataNode作为主导DataNode存在协调进行Block Recovery 
+## Lease Recovery/Block Recovery
+当其他客户端试图获取当前文件的Lease时候，就会进入Lease Recovery；入口：FSNamesystem.internalReleaseLease，整体运行过程分为：
+* Lease Recovery预处理：NameNode执行
+* Block Recovery进行实际的Recover：DataNode执行
+* Lease Recovery后处理更新Block Info：NameNode执行
+
+### Lease Recovery预处理
+* NameNode找到"Last Block"所在的DataNode，然后将其作为primary DataNode，该primary DataNode作为主导DataNode存在协调进行Block Recovery 
+* 将当前Block更新到primary DataNode的Description下的recoverBlocks中，之后handleHeartbeat会捕捉到进一步处理
 * 其他过程
   * 文件所有的Block都Complete直接关闭文件即可，但是有Block小于配置最小副本数，会抛出异常AlreadyBeingCreatedException
   * 如果对应文件的Block在现有的DataNode上都不存在，则直接remove Block然后进行文件关闭操作
@@ -146,8 +152,18 @@ public void initializeBlockRecovery(BlockInfo blockInfo, long recoveryId,
  }
 ```
 
-## Block Recovery
-&emsp;&emsp;Block Recovery
+### Block Recovery执行
+&emsp;&emsp;Block Recovery被LeaseRecovery所触发，其中recoverId实际上是GS，Block Recovery过程主要跨越NameNode和DataNode进行执行
+#### NameNode执行部分
+* NameNode在执行handleHeartbeat，过程中会捕捉到有需要Recovery的Block
+* 执行truncate相关逻辑，过滤stale node：主要30s没有心跳的DataNode
+* 发送BlockRecoveryCommand，RecoverBlock到DataNode进一步进行Recover
+#### DataNode执行部分
+&emsp;&emsp;DataNode会接收到NameNode发送来的BlockRecoveryCommand，开始继续Recover；在DataNode上执行Recover的载体主要有BlockRecoveryWorker和其包含的Class：RecoveryTaskContiguous
+BlockRecoveryWorker中启动Task（RecoveryTaskContiguous）开始recover
+### Lease Recovery确认Recover
+
+
 
 ## Pipeline Recovery
 
