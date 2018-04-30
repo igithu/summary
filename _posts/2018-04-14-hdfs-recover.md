@@ -64,11 +64,11 @@ tags: hdfs
   * sortedLeases：Lease集合
   * sortedLeasesByPath：文件路径到Lease的映射关系
 * Limit超时控制
- * softLimit：默认时间, 60s.
-  * softLimit到期之前，一个Client拥有对他的文件的独立访问权，其他Client不能剥夺该客户端独占写这个文件的权利
-  * softLimit到期之后，其他任何一个Client都可以回收lease，继而得到这个文件的lease，获得对这个文件的独占访问权
- * hardLimit：默认时间, 1hour. 到期之后，NameNode会对当前Lease进行强制回收
- * 所有回收Lease入口全部通过FSNamesystem.internalReleaseLease实现
+* softLimit：默认时间, 60s.
+* softLimit到期之前，一个Client拥有对他的文件的独立访问权，其他Client不能剥夺该客户端独占写这个文件的权利
+* softLimit到期之后，其他任何一个Client都可以回收lease，继而得到这个文件的lease，获得对这个文件的独占访问权
+* hardLimit：默认时间, 1hour. 到期之后，NameNode会对当前Lease进行强制回收
+* 所有回收Lease入口全部通过FSNamesystem.internalReleaseLease实现
 
 
 # HDFS Recover
