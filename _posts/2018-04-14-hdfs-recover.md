@@ -83,13 +83,14 @@ tags: hdfs
 
 ## Lease Recovery
 当其他客户端试图获取当前文件的Lease时候，就会进入Lease Recovery；入口：FSNamesystem.internalReleaseLease
-* 文件所有的Block都Complete直接关闭文件即可，但是有Block小于配置最小副本数，会抛出异常AlreadyBeingCreatedException
-* 如果对应文件的Block在现有的DataNode上都不存在，则直接remove Block然后进行文件关闭操作
-* BlockRecover准备，获取blockRecoveryId（实际为GS），更新Leaseholder（reassignLease， renewLease），
-* 初始化BlockRecover（initializeBlockRecovery）
+* NameNode找到"Last Block"所在的DataNode，然后将其作为primary DataNode，primary DataNode作为主导DataNode存在协调进行Block Recovery 
+* 其他过程
+  * 文件所有的Block都Complete直接关闭文件即可，但是有Block小于配置最小副本数，会抛出异常AlreadyBeingCreatedException
+  * 如果对应文件的Block在现有的DataNode上都不存在，则直接remove Block然后进行文件关闭操作
+  * BlockRecover准备，获取blockRecoveryId（实际为GS），更新Leaseholder（reassignLease， renewLease），
 
 ## Block Recovery
-如果一个文件需要block recovery，NameNode从拥有该文件最后一个block的replica的DataNodes中挑选一个primary DataNode，使其DataNode协调其余DataNodes进行block recovery。
+
 ## Pipeline Recovery
 
 
