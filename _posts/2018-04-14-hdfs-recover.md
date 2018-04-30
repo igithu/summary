@@ -87,7 +87,59 @@ tags: hdfs
 * 其他过程
   * 文件所有的Block都Complete直接关闭文件即可，但是有Block小于配置最小副本数，会抛出异常AlreadyBeingCreatedException
   * 如果对应文件的Block在现有的DataNode上都不存在，则直接remove Block然后进行文件关闭操作
-  * BlockRecover准备，获取blockRecoveryId（实际为GS），更新Leaseholder（reassignLease， renewLease），
+  * BlockRecover准备，获取blockRecoveryId（实际为GS），更新Leaseholder（reassignLease， renewLease）
+* 关键代码
+```java
+public void initializeBlockRecovery(long recoveryId, boolean startRecovery) {
+    setBlockUCState(BlockUCState.UNDER_RECOVERY);
+    blockRecoveryId = recoveryId;
+    if (!startRecovery) {
+      return;
+    }
+    if (replicas.size() == 0) {
+      NameNode.blockStateChangeLog.warn("BLOCK*"
+        + " BlockInfoUnderConstruction.initLeaseRecovery:"
+        + " No blocks found, lease removed.");
+    }
+    boolean allLiveReplicasTriedAsPrimary = true;
+    for (int i = 0; i < replicas.size(); i++) {
+      // Check if all replicas have been tried or not.
+      if (replicas.get(i).isAlive()) {
+        allLiveReplicasTriedAsPrimary =
+            (allLiveReplicasTriedAsPrimary && replicas.get(i).getChosenAsPrimary());
+      }
+    }
+    if (allLiveReplicasTriedAsPrimary) {
+      // Just set all the replicas to be chosen whether they are alive or not.
+      for (int i = 0; i < replicas.size(); i++) {
+        replicas.get(i).setChosenAsPrimary(false);
+      }
+    }
+    long mostRecentLastUpdate = 0;
+    ReplicaUnderConstruction primary = null;
+    primaryNodeIndex = -1;
+    for(int i = 0; i < replicas.size(); i++) {
+      // Skip alive replicas which have been chosen for recovery.
+      if (!(replicas.get(i).isAlive() && !replicas.get(i).getChosenAsPrimary())) {
+        continue;
+      }
+      final ReplicaUnderConstruction ruc = replicas.get(i);
+      final long lastUpdate = ruc.getExpectedStorageLocation()
+          .getDatanodeDescriptor().getLastUpdateMonotonic();
+      if (lastUpdate > mostRecentLastUpdate) {
+        primaryNodeIndex = i;
+        primary = ruc;
+        mostRecentLastUpdate = lastUpdate;
+      }
+    }
+    if (primary != null) {
+      primary.getExpectedStorageLocation().getDatanodeDescriptor().addBlockToBeRecovered(this);
+      primary.setChosenAsPrimary(true);
+      NameNode.blockStateChangeLog.info(
+          "BLOCK* {} recovery started, primary={}", this, primary);
+    }
+  }
+```
 
 ## Block Recovery
 
