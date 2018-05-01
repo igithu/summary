@@ -171,7 +171,7 @@ public void initializeBlockRecovery(BlockInfo blockInfo, long recoveryId,
 
 ### Lease Recovery确认Recover
 * NameNode更新Block Info：new GS，new Length
-* NameNode commit 文件的Last Block，将Last Block标记complete（commitOrCompleteLastBlock）
+* NameNode commit文件的Last Block，将Last Block标记complete（commitOrCompleteLastBlock）
 * NameNode最后移除Lease，close文件，放开权限，其他Client可以进行读写操作（finalizeINodeFileUnderConstruction）
 * NameNode提交这些改变到edit log
 
