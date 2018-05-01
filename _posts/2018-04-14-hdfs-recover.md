@@ -161,11 +161,19 @@ public void initializeBlockRecovery(BlockInfo blockInfo, long recoveryId,
 #### DataNode执行部分
 在DataNode上执行Recover的载体主要有BlockRecoveryWorker和RecoveryTaskContiguous
 * Primary DataNode会接收到NameNode发送来的BlockRecoveryCommand，开始继续Recover；
-* 从Block所在的DataNode上获取ReplicaRecoveryInfo，包括：GS，Length等。
-* 过滤掉处在RUR，TEMPORARY的Replica
-
+* 从Block所在的DataNode上获取ReplicaRecoveryInfo，包括：GS，Length等。同时
+* 过滤出含有合法的GS，length以及ReplicaState的Replica，放在BlockRecord List中
+* Primary DataNode通过RPC调用DataNode Call
+  * 将GS以及length更新到DataNode List中（RecoveringBlock.getLocations()）
+  * 各个DataNode上Finalize（FsVolumeImpl.addFinalizedBlock）
+  * 各个DataNode最后通过IBR（Incremental Block Reports）将最后的Block信息通知到NameNode
+* Primary DataNode将new GS，new Length更新到NameNode中
 
 ### Lease Recovery确认Recover
+* NameNode更新Block Info：new GS，new Length
+* NameNode commit 文件的Last Block，将Last Block标记complete（commitOrCompleteLastBlock）
+* NameNode最后移除Lease，close文件，放开权限，其他Client可以进行读写操作（finalizeINodeFileUnderConstruction）
+* NameNode提交这些改变到edit log
 
 
 
