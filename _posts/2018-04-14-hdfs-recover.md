@@ -175,6 +175,9 @@ public void initializeBlockRecovery(BlockInfo blockInfo, long recoveryId,
 * NameNode最后移除Lease，close文件，放开权限，其他Client可以进行读写操作（finalizeINodeFileUnderConstruction）
 * NameNode提交这些改变到edit log
 
+## Lease Recovery/Block Recovery整体过程
+![image04](https://igithu.github.io/summary/images/recover-process.png)
+
 
 
 ## Pipeline Recovery
