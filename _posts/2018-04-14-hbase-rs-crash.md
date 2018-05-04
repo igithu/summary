@@ -24,34 +24,6 @@ tags: hbase
 
 #### 主要代码段（HBase版本：0.98.8）
 ```java
-/**
-   * Append a set of edits to the log. Log edits are keyed by (encoded)
-   * regionName, rowname, and log-sequence-id.
-   *
-   * Later, if we sort by these keys, we obtain all the relevant edits for a
-   * given key-range of the HRegion (TODO). Any edits that do not have a
-   * matching COMPLETE_CACHEFLUSH message can be discarded.
-   *
-   * <p>
-   * Logs cannot be restarted once closed, or once the HLog process dies. Each
-   * time the HLog starts, it must create a new log. This means that other
-   * systems should process the log appropriately upon each startup (and prior
-   * to initializing HLog).
-   *
-   * synchronized prevents appends during the completion of a cache flush or for
-   * the duration of a log roll.
-   *
-   * @param info
-   * @param tableName
-   * @param edits
-   * @param clusterIds that have consumed the change (for replication)
-   * @param now
-   * @param doSync shall we sync?
-   * @param sequenceId of the region.
-   * @return txid of this transaction
-   * @throws IOException
-   */
-  @SuppressWarnings("deprecation")
   private long append(HRegionInfo info, TableName tableName, WALEdit edits, List<UUID> clusterIds,
       final long now, HTableDescriptor htd, boolean doSync, boolean isInMemstore, 
       AtomicLong sequenceId, long nonceGroup, long nonce) throws IOException {
