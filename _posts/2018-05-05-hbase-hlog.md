@@ -47,7 +47,7 @@ tags: hbase
 
 ![image03](https://igithu.github.io/summary/images/hlog-disk.png)
 注意两点
-* 一次doWrite 生成一次txid，生词一次sequenceId；txid与sequenceId没有必然联系，有时候可以关联起来
+* 一次doWrite，生成一次txid，生成一次sequenceId；txid与sequenceId没有必然联系，有时候可以关联起来
 * 一次rollWrite，roll一次新文件：除了LogRoller周期roll文件外，在向pendingWrites add数据或者调用append数据到HDFS过程中出现异常，一般都会输出Fatal日志然后调用requestLogRoll来触发rollWrite
 
 # HLog失效
