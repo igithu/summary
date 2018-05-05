@@ -58,14 +58,14 @@ tags: hbase
   * 每次rollWrite，会重新new进行重置
   * 记录regionName和sequenceId映射
 * hlogSequenceNums
-  * 类型：NavigableMap<Path, Map<byte[], Long>>
-  * log file与latestSequenceNums映射关系
+  * 类型：NavigableMap<Path, Map<byte[], Long>>
+  * log file与latestSequenceNums映射关系
 * oldestUnflushedSeqNums
-  * 类型：ConcurrentSkipListMap
-  * 标识：当前region log没有被flush
+  * 类型：ConcurrentSkipListMap
+  * 标识：当前region log没有被flush
 * oldestFlushingSeqNums
-  * 类型：TreeMap
-  * 标识：当前region log正在被flush
+  * 类型：TreeMap
+  * 标识：当前region log正在被flush
   
 ## HLog失效过程
 * MemStore进行flush时，会调用startCacheFlush，更新进regionName和sequenceId到oldestFlushingSeqNums
