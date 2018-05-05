@@ -44,6 +44,8 @@ tags: hbase
 * Write Handler接下来会等待下游线程HLog.sync()完成同步（以txid为单位）
 * AsyncWriter 线程会在后台收集在pending buffer中的WALEdit Log数据，flush只写数据到HDFS上，notify AsyncSyncer在pending buffer一部分已经flush到HDFS上，可以进行下一步的sync
 
+![image03](https://igithu.github.io/summary/images/hlog-disk.png)
+
 # HLog失效
 &emsp;&emsp;数据从Memstore中落盘，对应的日志就可以被删除，因此一个文件所有数据失效，只要看该文件中最大sequenceid对应的数据是否已经落盘就可以，HBase会在每次执行flush的时候纪录对应的最大的sequenceid，如果前者小于后者，则可以认为该日志文件失效。一旦判断失效就会将该文件从.logs目录移动到.oldlogs目录,
 
