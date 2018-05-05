@@ -46,6 +46,9 @@ tags: hbase
 ## Roll全局关键过程
 
 ![image03](https://igithu.github.io/summary/images/hlog-disk.png)
+注意两点
+* 一次doWrite 生成一次txid，生词一次sequenceId；txid与sequenceId没有必然联系，有时候可以关联起来
+* 一次rollWrite，roll一次新文件：除了LogRoller周期roll文件外，在向pendingWrites add数据或者调用append数据到HDFS过程中出现异常，一般都会输出Fatal日志然后调用requestLogRoll来触发rollWrite
 
 # HLog失效
 &emsp;&emsp;数据从Memstore中落盘，对应的日志就可以被删除，因此一个文件所有数据失效，只要看该文件中最大sequenceid对应的数据是否已经落盘就可以，HBase会在每次执行flush的时候纪录对应的最大的sequenceid，如果前者小于后者，则可以认为该日志文件失效。一旦判断失效就会将该文件从.logs目录移动到.oldlogs目录,
