@@ -35,14 +35,15 @@ tags: hbase
   * `pendingTxid`：Write Handler pending的点位
   * `lastWrittenTxid`：记录上一次写入的点位
   * `pendingTxid <= lastWrittenTxid`时，AsyncWriter会进入wait状态，直到writtenTxid被更新
-* 点位(txid)之间关系
+* LogRoller：负责周期HLog Roller
+  * 驱动数据落盘
+  * Roll新HLog，等待下一轮append + sync
+* SequenceFileLogWriter：主要负责delegates to SequenceFile.Writer
+* 以上点位(txid)之间关系
   ![image02](https://igithu.github.io/summary/images/txid.png)
 
 
-## Roll关键过程
-* Write Handler将日志数据向HLog写入pending buffer中，之后notify到AsyncWriter线程：有新的WALEdit是数据在local buffer中
-* Write Handler接下来会等待下游线程HLog.sync()完成同步（以txid为单位）
-* AsyncWriter 线程会在后台收集在pending buffer中的WALEdit Log数据，flush只写数据到HDFS上，notify AsyncSyncer在pending buffer一部分已经flush到HDFS上，可以进行下一步的sync
+## Roll全局关键过程
 
 ![image03](https://igithu.github.io/summary/images/hlog-disk.png)
 
