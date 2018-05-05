@@ -44,14 +44,38 @@ tags: hbase
 
 
 ## Roll全局关键过程
-
+以下全部来自代码HBase 版本为：0.98.8
 ![image03](https://igithu.github.io/summary/images/hlog-disk.png)
 注意两点
 * 一次doWrite，生成一次txid，生成一次sequenceId；txid与sequenceId没有必然联系，有时候可以关联起来
 * 一次rollWrite，roll一次新文件：除了LogRoller周期roll文件外，在向pendingWrites add数据或者调用append数据到HDFS过程中出现异常，一般都会输出Fatal日志，然后调用requestLogRoll来触发rollWrite
 
 # HLog失效
-&emsp;&emsp;数据从Memstore中落盘，对应的日志就可以被删除，因此一个文件所有数据失效，只要看该文件中最大sequenceid对应的数据是否已经落盘就可以，HBase会在每次执行flush的时候纪录对应的最大的sequenceid，如果前者小于后者，则可以认为该日志文件失效。一旦判断失效就会将该文件从.logs目录移动到.oldlogs目录,
+&emsp;&emsp;数据从Memstore中落盘，对应的日志就可以被删除，因此一个文件所有数据失效，只要看该文件中最大sequenceid对应的数据是否已经落盘就可以，HBase会在每次执行flush的时候纪录对应的最大的sequenceid，如果前者小于后者，则可以认为该日志文件失效。一旦判断失效就会将该文件从.logs目录移动到.oldlogs目录
+## 涉及的核心数据结构
+* latestSequenceNums
+  * 类型：HashMap<byte[], Long>
+  * 每次rollWrite，会重新new进行重置
+  * 记录regionName和sequenceId映射
+* hlogSequenceNums
+  * 类型：NavigableMap<Path, Map<byte[], Long>>
+  * log file与latestSequenceNums映射关系
+* oldestUnflushedSeqNums
+  * 类型：ConcurrentSkipListMap
+  * 标识：当前region log没有被flush
+* oldestFlushingSeqNums
+  * 类型：TreeMap
+  * 标识：当前region log正在被flush
+  
+## HLog失效过程
+* MemStore进行flush时，会调用startCacheFlush，更新进regionName和sequenceId到oldestFlushingSeqNums
+* MemStore进行flush出现异常时，会调用abortCacheFlush，将当前regionName, sequenceId从oldestFlushingSeqNums中remove掉，然后更新到oldestUnflushedSeqNums中
+* MemStore完成Flush时候
+
+  
+## HLog失效全景图
+&emsp;&emsp;HLog的失效，主线逻辑是在rollWrite中，以下给出自rollWrite执行后的示意图，以下是从代码中抽取的主干
+
 
 
 # HLog清除
