@@ -54,9 +54,9 @@ tags: hbase
 &emsp;&emsp;数据从Memstore中落盘，对应的日志就可以被删除，因此一个文件所有数据失效，只要看该文件中最大sequenceid对应的数据是否已经落盘就可以，HBase会在每次执行flush的时候纪录对应的最大的sequenceid，如果前者小于后者，则可以认为该日志文件失效。一旦判断失效就会将该文件从.logs目录移动到.oldlogs目录
 ## 涉及的核心数据结构
 * latestSequenceNums
-  * 类型：HashMap<byte[], Long>
-  * 每次rollWrite，会重新new进行重置
-  * 记录regionName和sequenceId映射
+  * 类型：HashMap<byte[], Long>
+  * 每次rollWrite，会重新new进行重置
+  * 记录regionName和sequenceId映射
 * hlogSequenceNums
   * 类型：NavigableMap<Path, Map<byte[], Long>>
   * log file与latestSequenceNums映射关系
