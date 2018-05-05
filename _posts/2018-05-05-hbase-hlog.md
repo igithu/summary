@@ -69,11 +69,11 @@ tags: hbase
   
 ## HLog失效过程
 * MemStore->internalFlushcache进行flush时，会调用startCacheFlush, 对于当前的regionName和sequenceId
-  * 从oldestUnflushedSeqNums中remove出
-  * 更新到oldestFlushingSeqNums中
+  * 从oldestUnflushedSeqNums中remove出
+  * 更新到oldestFlushingSeqNums中
 * MemStore->internalFlushcache进行flush出现异常时，会调用abortCacheFlush，对于当前regionName, sequenceId
-  * 从oldestFlushingSeqNums中remove出
-  * 更新到oldestUnflushedSeqNums中
+  * 从oldestFlushingSeqNums中remove出
+  * 更新到oldestUnflushedSeqNums中
 * MemStore->internalFlushcache完成Flush时候, 调用completeCacheFlush，从oldestFlushingSeqNums移除
   * 此时无论oldestUnflushedSeqNums和oldestFlushingSeqNums都没有当前regionName, sequenceId
   * 在areAllRegionsFlushed中就可以认定region/sequenceId对应的log file失效
