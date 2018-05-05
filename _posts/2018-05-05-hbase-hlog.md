@@ -68,9 +68,15 @@ tags: hbase
   * 标识：当前region log正在被flush
   
 ## HLog失效过程
-* MemStore->internalFlushcache进行flush时，会调用startCacheFlush，将当前regionName和sequenceId从oldestUnflushedSeqNums中remove出，再更新进regionName和sequenceId到oldestFlushingSeqNums
-* MemStore->internalFlushcache进行flush出现异常时，会调用abortCacheFlush，将当前regionName, sequenceId从oldestFlushingSeqNums中remove掉，然后更新到oldestUnflushedSeqNums中
-* MemStore->internalFlushcache完成Flush时候, 调用completeCacheFlush，从oldestFlushingSeqNums移除，此时无论oldestUnflushedSeqNums和oldestFlushingSeqNums都没有当前regionName, sequenceId，这样在areAllRegionsFlushed中就可以认定region/sequenceId对应的log file失效
+* MemStore->internalFlushcache进行flush时，会调用startCacheFlush, 对于当前的regionName和sequenceId
+  * 从oldestUnflushedSeqNums中remove出
+  * 更新到oldestFlushingSeqNums中
+* MemStore->internalFlushcache进行flush出现异常时，会调用abortCacheFlush，对于当前regionName, sequenceId
+  * 从oldestFlushingSeqNums中remove出
+  * 更新到oldestUnflushedSeqNums中
+* MemStore->internalFlushcache完成Flush时候, 调用completeCacheFlush，从oldestFlushingSeqNums移除
+  * 此时无论oldestUnflushedSeqNums和oldestFlushingSeqNums都没有当前regionName, sequenceId
+  * 在areAllRegionsFlushed中就可以认定region/sequenceId对应的log file失效
 
 ## HLog失效全景图
 &emsp;&emsp;HLog的失效，主线逻辑是在rollWrite中，以下给出自rollWrite执行后的示意图，以下是从代码中抽取的主干
