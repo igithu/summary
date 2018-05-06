@@ -51,7 +51,7 @@ tags: hbase
 * 一次rollWrite，roll一次新文件：除了LogRoller周期roll文件外，在向pendingWrites add数据或者调用append数据到HDFS过程中出现异常，一般都会输出Fatal日志，然后调用requestLogRoll来触发rollWrite
 
 # HLog失效
-&emsp;&emsp;数据从Memstore中落盘，对应的日志就可以被删除，因此一个文件所有数据失效，只要看该文件中最大sequenceid对应的数据是否已经落盘就可以，HBase会在每次执行flush的时候纪录对应的最大的sequenceid，如果前者小于后者，则可以认为该日志文件失效。一旦判断失效就会将该文件从.logs目录移动到.oldlogs目录
+&emsp;&emsp;数据从Memstore中落盘，对应的日志就可以被删除，因此一个文件所有数据失效，只要看该文件中最大sequenceid对应的数据是否已经落盘就可以，HBase会在每次执行flush的时候纪录对应的最大的sequenceid，如果前者小于后者，则可以认为该日志文件失效。一旦判断失效就会将该文件从WALs/logs目录移动到oldWALs/oldlogs目录
 ## 涉及的核心数据结构
 * latestSequenceNums
   * 类型：HashMap<byte[], Long>
@@ -85,5 +85,6 @@ tags: hbase
 
 
 # HLog清除
-&emsp;&emsp;HMaster后台会启动一个线程LogCleaner,每隔一段时间（由参数’hbase.master.cleaner.interval’，默认1分钟）会检查一次文件夹.oldlogs下的所有失效日志文件，确认是否可以被删除，确认之后执行删除操作。又有同学问了，刚才不是已经确认可以被删除了吗？这里基于两点考虑，第一对于使用HLog进行主从复制的业务来说，第三步的确认并不完整，需要继续确认是否该HLog还在应用于主从复制；第二对于没有执行主从复制的业务来讲，HBase依然提供了一个过期的TTL（由参数’hbase.master.logcleaner.ttl’决定，默认10分钟），也就是说.oldlogs里面的文件最多依然再保存10分钟。
+HMaster后台会启动一个线程LogCleaner,每隔一段时间（由参数’hbase.master.cleaner.interval’，默认1分钟）会检查一次文件夹.oldlogs下的所有失效日志文件，确认是否可以被删除，确认之后执行删除操作。
+需要继续确认是否该HLog还在应用于主从复制；第二对于没有执行主从复制的业务来讲，HBase依然提供了一个过期的TTL（由参数’hbase.master.logcleaner.ttl’决定，默认10分钟），也就是说.oldlogs里面的文件最多依然再保存10分钟。
 
