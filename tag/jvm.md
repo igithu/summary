@@ -1,4 +1,4 @@
 ---
 layout: tag_index
-tag: jvm1
+tag: jvm
 ---
