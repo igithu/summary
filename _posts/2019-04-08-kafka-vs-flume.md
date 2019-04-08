@@ -1,4 +1,3 @@
-
 ---
 layout: post
 title: "kafka vs flume"
