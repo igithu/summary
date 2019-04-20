@@ -17,8 +17,10 @@ date: 2019-04-20
 
 ## Hadoop生态
 * [Hadoop系列四——HBase简介](https://niyanchun.com/hbase-introduction-extend.html)
+* [Hadoop系列四——HBase简介](https://niyanchun.com/hbase-introduction-extend.html)
 
 
 ## 其他
 * [linux server 常见参数修改](https://www.zybuluo.com/delight/note/13600)
+* [Linux内存使用情况以及内存泄露分析之工具与方法](https://www.cnblogs.com/arnoldlu/p/6612643.html)
 
