@@ -7,6 +7,7 @@ date: 2019-04-20
 
 
 ## Hadoop Yarn
+* [Hadoop - YARN](https://wiki.jikexueyuan.com/project/hadoop/yarn.html)
 * [YARN集群维护部分问题汇总](https://www.cnblogs.com/shenh062326/p/3550794.html)
 
 
