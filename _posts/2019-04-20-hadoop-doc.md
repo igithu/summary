@@ -18,6 +18,8 @@ date: 2019-04-20
 * [HDFS Recovery Processes](https://github.com/mattshma/bigdata/blob/master/hadoop/hdfs/hdfs_recovery.md)
 * [元数据更新及日志写入情景分析](https://www.cnblogs.com/melburg/articles/2620706.html)
 * [HDFS NameNode重启优化](https://tech.meituan.com/2017/03/17/namenode-restart-optimization.html)
+* [Hadoop HA 机制学习 ](https://cloud.tencent.com/developer/article/1006133)
+* [hadoop namenode 都是standby ](http://blog.51yip.com/hadoop/2097.html)
 
 
 
